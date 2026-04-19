@@ -28,7 +28,7 @@ workflows:
           npx cordova prepare ios
       - name: Set unique iOS build number
         script: |
-          BUILD_NUMBER="${CM_BUILD_ID}"
+          BUILD_NUMBER="$(date +%Y%m%d%H%M%S)"
           INFO_PLIST="$CM_BUILD_DIR/platforms/ios/SIGEV Mobile/SIGEV Mobile-Info.plist"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$INFO_PLIST"
           /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST"
