@@ -37,12 +37,11 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        auth: integration
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
-        # Se preferir API Key manual, configure em Codemagic:
+        # Configure a integracao App Store Connect no workflow pelo painel do Codemagic.
+        # Se preferir API Key manual, use as variaveis seguras:
         # APP_STORE_CONNECT_ISSUER_ID
         # APP_STORE_CONNECT_KEY_IDENTIFIER
         # APP_STORE_CONNECT_PRIVATE_KEY
-        # e troque auth para api_key.
