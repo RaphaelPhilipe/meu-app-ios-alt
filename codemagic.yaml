@@ -28,8 +28,8 @@ workflows:
           npx cordova prepare ios
       - name: Apply code signing to Xcode project
         script: |
-          xcode-project use-profiles \
-            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE"
+          cd "$CM_BUILD_DIR/platforms/ios"
+          xcode-project use-profiles
       - name: Build IPA with xcode-project
         script: |
           xcode-project build-ipa \
