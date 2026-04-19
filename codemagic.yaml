@@ -26,9 +26,10 @@ workflows:
       - name: Prepare Cordova app
         script: |
           npx cordova prepare ios
-      - name: Build unsigned iOS app
+      - name: Apply code signing to Xcode project
         script: |
-          npx cordova build ios --release --device
+          xcode-project use-profiles \
+            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE"
       - name: Build IPA with xcode-project
         script: |
           xcode-project build-ipa \
