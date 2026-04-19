@@ -236,10 +236,70 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 22px;
 }
 
 .login-card {
     padding: 28px 22px;
+}
+
+.login-card--brand {
+    background: rgba(255, 251, 244, 0.96);
+}
+
+.login-card__brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.login-card__brand strong {
+    display: block;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+.login-card__hint {
+    margin-top: 14px;
+    color: var(--muted);
+    opacity: 1;
+}
+
+.login-hero-card {
+    padding: 26px 22px;
+    border-radius: 28px;
+    background:
+        linear-gradient(135deg, rgba(15, 122, 90, 0.96), rgba(18, 113, 87, 0.9)),
+        radial-gradient(circle at top right, rgba(255, 195, 87, 0.18), transparent 30%);
+    color: #fff7ef;
+    box-shadow: 0 22px 50px rgba(13, 75, 59, 0.24);
+}
+
+.login-hero-card__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    margin-bottom: 12px;
+}
+
+.login-hero-card h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+}
+
+.login-hero-card p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    opacity: 0.92;
 }
 
 .logo-mark {

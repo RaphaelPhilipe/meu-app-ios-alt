@@ -1,5 +1,8 @@
 import { APP_CONFIG, resolveApiUrl } from "../core/config.js";
 import { enqueueRequest } from "./offline-queue.js";
+import { storage } from "./storage.js";
+
+const ACCESS_TOKEN_KEY = "access_token";
 
 function timeoutSignal(ms) {
     const controller = new AbortController();
@@ -47,6 +50,11 @@ export async function apiRequest(endpoint, options = {}) {
             "Content-Type": "application/json"
         }
     };
+
+    const accessToken = storage.get(ACCESS_TOKEN_KEY);
+    if (accessToken) {
+        request.headers.Authorization = `Bearer ${accessToken}`;
+    }
 
     if (body !== undefined) {
         request.body = JSON.stringify(body);

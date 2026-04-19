@@ -3,6 +3,7 @@ import { storage } from "./storage.js";
 import { setState } from "../core/store.js";
 
 const SESSION_KEY = "session_snapshot";
+const ACCESS_TOKEN_KEY = "access_token";
 
 export async function login(loginValue, password) {
     const data = await apiRequest("api/mobile/auth/login", {
@@ -14,6 +15,9 @@ export async function login(loginValue, password) {
     });
 
     storage.set(SESSION_KEY, data.user);
+    if (data.auth?.access_token) {
+        storage.set(ACCESS_TOKEN_KEY, data.auth.access_token);
+    }
     setState({
         session: data.user,
         bootstrap: data.bootstrap
@@ -29,6 +33,7 @@ export async function restoreSession() {
         return data.user;
     } catch (error) {
         storage.remove(SESSION_KEY);
+        storage.remove(ACCESS_TOKEN_KEY);
         setState({ session: null });
         return null;
     }
@@ -41,6 +46,7 @@ export async function logout() {
         });
     } finally {
         storage.remove(SESSION_KEY);
+        storage.remove(ACCESS_TOKEN_KEY);
         setState({
             session: null,
             bootstrap: null,
