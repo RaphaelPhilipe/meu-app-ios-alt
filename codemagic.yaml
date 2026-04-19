@@ -1,0 +1,48 @@
+workflows:
+  sigev_ios_cordova:
+    name: SIGEV iOS Cordova
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        XCODE_WORKSPACE: "platforms/ios/SIGEV Mobile.xcworkspace"
+        XCODE_SCHEME: "SIGEV Mobile"
+        BUNDLE_ID: "com.sigevalt.mobile"
+      node: 20.11.1
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: $BUNDLE_ID
+    scripts:
+      - name: Install Cordova dependencies
+        script: |
+          npm install
+      - name: Add iOS platform
+        script: |
+          npx cordova platform add ios@7.1.1 || npx cordova platform ls
+      - name: Prepare Cordova app
+        script: |
+          npx cordova prepare ios
+      - name: Build unsigned iOS app
+        script: |
+          npx cordova build ios --release --device
+      - name: Build IPA with xcode-project
+        script: |
+          xcode-project build-ipa \
+            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+        # Se preferir API Key manual, configure em Codemagic:
+        # APP_STORE_CONNECT_ISSUER_ID
+        # APP_STORE_CONNECT_KEY_IDENTIFIER
+        # APP_STORE_CONNECT_PRIVATE_KEY
+        # e troque auth para api_key.

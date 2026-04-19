@@ -1,0 +1,17 @@
+node_modules/
+platforms/
+plugins/
+www/.DS_Store
+.DS_Store
+Thumbs.db
+build/
+dist/
+coverage/
+*.log
+*.tmp
+*.bak
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.env
+.env.*
