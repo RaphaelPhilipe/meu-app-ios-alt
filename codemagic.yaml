@@ -42,8 +42,12 @@ workflows:
 
           if echo "$AVAILABLE_SCHEMES" | grep -Fxq "$XCODE_SCHEME"; then
             SELECTED_SCHEME="$XCODE_SCHEME"
+          elif echo "$AVAILABLE_SCHEMES" | grep -Fxiq "SIGEVALT"; then
+            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | grep -Fix "SIGEVALT" | head -n 1)
+          elif echo "$AVAILABLE_SCHEMES" | grep -Fxiq "SIGEV ALT"; then
+            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | grep -Fix "SIGEV ALT" | head -n 1)
           else
-            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | head -n 1)
+            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | grep -Ev '^(Pods-|boost$|React-|Expo|SocketRocket|Yoga|glog|fmt|hermes-engine|RCT-|ReactCodegen|ReactCommon|RNCAsyncStorage|RNGestureHandler|RNReanimated|RNScreens)' | head -n 1)
           fi
 
           if [ -z "$SELECTED_SCHEME" ]; then
@@ -53,9 +57,26 @@ workflows:
 
           echo "Using scheme: $SELECTED_SCHEME"
 
+          xcode-project use-profiles
+
+          EXPORT_OPTIONS_PLIST="/Users/builder/export_options.plist"
+          if [ ! -f "$EXPORT_OPTIONS_PLIST" ]; then
+            cat > "$EXPORT_OPTIONS_PLIST" <<EOF
+          {
+            "method": "app-store",
+            "signingStyle": "automatic",
+            "teamID": "${APP_STORE_CONNECT_TEAM_ID:-}",
+            "uploadBitcode": false,
+            "compileBitcode": false
+          }
+          EOF
+            plutil -convert xml1 "$EXPORT_OPTIONS_PLIST"
+          fi
+
           xcode-project build-ipa \
             --workspace "$WORKSPACE_PATH" \
-            --scheme "$SELECTED_SCHEME"
+            --scheme "$SELECTED_SCHEME" \
+            --export-options-plist "$EXPORT_OPTIONS_PLIST"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
