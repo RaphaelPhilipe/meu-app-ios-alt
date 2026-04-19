@@ -45,7 +45,6 @@ export async function apiRequest(endpoint, options = {}) {
     const url = resolveApiUrl(endpoint);
     const request = {
         method,
-        credentials: "include",
         headers: {
             "Content-Type": "application/json"
         }
@@ -72,6 +71,12 @@ export async function apiRequest(endpoint, options = {}) {
             return await parseResponse(response);
         } catch (error) {
             timer.clear();
+            if (error instanceof TypeError || error?.message === "Load failed") {
+                const networkError = new Error("Nao foi possivel conectar ao servidor.");
+                networkError.code = "NETWORK_ERROR";
+                networkError.retryable = true;
+                error = networkError;
+            }
             const offline = !navigator.onLine;
             const canRetry = attempt < retries && (offline === false) && (error.name === "AbortError" || error.retryable);
 

@@ -3,6 +3,10 @@ export function renderLogin() {
         <section class="screen login-shell">
             <div class="login-backdrop"></div>
             <div class="card login-card login-card--site">
+                <div class="login-brand-top">
+                    <img src="./assets/images/sigev-alt-logo.png" alt="SIGEV ALT" class="login-brand-image login-brand-image--top">
+                    <div class="login-brand-caption">SIGEV ALT</div>
+                </div>
                 <h2 class="login-title-site">Login</h2>
                 <div class="login-divider"></div>
                 <form id="login-form">
@@ -21,9 +25,6 @@ export function renderLogin() {
                         <button type="submit" class="btn full">Entrar</button>
                     </div>
                 </form>
-                <div class="login-brand-footer">
-                    <img src="https://sigevalt.com/img/icon.png" alt="SIGEV ALT" class="login-brand-image" onerror="this.style.display='none'">
-                </div>
                 <p class="muted login-card__hint">Mesmo login do sistema web. Se houver erro de acesso, o app mostrara a mensagem retornada pelo servidor.</p>
             </div>
         </section>

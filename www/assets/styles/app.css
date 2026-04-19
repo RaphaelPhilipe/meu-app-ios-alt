@@ -299,6 +299,14 @@ body {
     font-size: 1.65rem;
 }
 
+.login-brand-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
 .login-divider {
     width: 100%;
     height: 1px;
@@ -322,15 +330,24 @@ body {
     font-size: 0.86rem;
 }
 
-.login-brand-footer {
-    margin-top: 18px;
-}
-
 .login-brand-image {
     display: block;
     margin: 0 auto;
     max-width: 110px;
     opacity: 0.86;
+}
+
+.login-brand-image--top {
+    max-width: 132px;
+    opacity: 1;
+}
+
+.login-brand-caption {
+    font-size: 0.88rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: var(--brand-strong);
+    text-transform: uppercase;
 }
 
 .login-card__hint {

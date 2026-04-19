@@ -10,7 +10,7 @@ export function renderAbout(payload) {
                 </div>
             </div>
             <div class="card">
-                <h2>${escapeHtml(payload?.name || "SIGEV Mobile")}</h2>
+                <h2>${escapeHtml(payload?.name || "SIGEV ALT")}</h2>
                 <p>${escapeHtml(payload?.description || "")}</p>
             </div>
             <div class="card">

@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-    appName: "SIGEV Mobile",
+    appName: "SIGEV ALT",
     version: "1.0.0",
     apiBaseUrl: "https://sigevalt.com",
     apiRoutePrefix: "index.php?r=",
