@@ -3,7 +3,7 @@ export const APP_CONFIG = {
     version: "1.0.0",
     apiBaseUrl: "https://sigevalt.com",
     apiRoutePrefix: "index.php?r=",
-    webAppEntryPath: "index.php",
+    webAppEntryPath: "login.php",
     requestTimeoutMs: 20000,
     retryAttempts: 1,
     cacheTtlMs: 5 * 60 * 1000,

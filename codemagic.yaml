@@ -35,17 +35,80 @@ workflows:
 
           SCHEME_NAME="$(basename "$WORKSPACE_PATH" .xcworkspace)"
           INFO_PLIST_PATH="$(find "$IOS_DIR" -path '*/CordovaLib/*' -prune -o -name '*-Info.plist' -print | head -n 1)"
+          APP_ICONSET_PATH="$(find "$IOS_DIR" -path '*/Images.xcassets/AppIcon.appiconset' -print | head -n 1)"
           if [ -z "$INFO_PLIST_PATH" ]; then
             echo "Nenhum *-Info.plist encontrado em $IOS_DIR"
+            exit 1
+          fi
+          if [ -z "$APP_ICONSET_PATH" ]; then
+            echo "Nenhum AppIcon.appiconset encontrado em $IOS_DIR"
             exit 1
           fi
 
           echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$CM_ENV"
           echo "SCHEME_NAME=$SCHEME_NAME" >> "$CM_ENV"
           echo "INFO_PLIST_PATH=$INFO_PLIST_PATH" >> "$CM_ENV"
+          echo "APP_ICONSET_PATH=$APP_ICONSET_PATH" >> "$CM_ENV"
           echo "Workspace detectado: $WORKSPACE_PATH"
           echo "Scheme detectado: $SCHEME_NAME"
           echo "Info.plist detectado: $INFO_PLIST_PATH"
+          echo "AppIcon detectado: $APP_ICONSET_PATH"
+      - name: Generate iOS app icons
+        script: |
+          SOURCE_ICON="$CM_BUILD_DIR/resources/ios/app-icon-1024.png"
+          if [ ! -f "$SOURCE_ICON" ]; then
+            echo "Icone base nao encontrado em $SOURCE_ICON"
+            exit 1
+          fi
+
+          cat > "$APP_ICONSET_PATH/Contents.json" <<'EOF'
+          {
+            "images": [
+              { "idiom": "iphone", "size": "20x20", "scale": "2x", "filename": "icon-20@2x.png" },
+              { "idiom": "iphone", "size": "20x20", "scale": "3x", "filename": "icon-20@3x.png" },
+              { "idiom": "iphone", "size": "29x29", "scale": "2x", "filename": "icon-29@2x.png" },
+              { "idiom": "iphone", "size": "29x29", "scale": "3x", "filename": "icon-29@3x.png" },
+              { "idiom": "iphone", "size": "40x40", "scale": "2x", "filename": "icon-40@2x.png" },
+              { "idiom": "iphone", "size": "40x40", "scale": "3x", "filename": "icon-40@3x.png" },
+              { "idiom": "iphone", "size": "60x60", "scale": "2x", "filename": "icon-60@2x.png" },
+              { "idiom": "iphone", "size": "60x60", "scale": "3x", "filename": "icon-60@3x.png" },
+              { "idiom": "ipad", "size": "20x20", "scale": "1x", "filename": "icon-20@1x.png" },
+              { "idiom": "ipad", "size": "20x20", "scale": "2x", "filename": "icon-20@2x-ipad.png" },
+              { "idiom": "ipad", "size": "29x29", "scale": "1x", "filename": "icon-29@1x.png" },
+              { "idiom": "ipad", "size": "29x29", "scale": "2x", "filename": "icon-29@2x-ipad.png" },
+              { "idiom": "ipad", "size": "40x40", "scale": "1x", "filename": "icon-40@1x.png" },
+              { "idiom": "ipad", "size": "40x40", "scale": "2x", "filename": "icon-40@2x-ipad.png" },
+              { "idiom": "ipad", "size": "76x76", "scale": "1x", "filename": "icon-76@1x.png" },
+              { "idiom": "ipad", "size": "76x76", "scale": "2x", "filename": "icon-76@2x.png" },
+              { "idiom": "ipad", "size": "83.5x83.5", "scale": "2x", "filename": "icon-83.5@2x.png" },
+              { "idiom": "ios-marketing", "size": "1024x1024", "scale": "1x", "filename": "icon-1024.png" }
+            ],
+            "info": { "version": 1, "author": "xcode" }
+          }
+          EOF
+
+          while IFS='|' read -r filename size; do
+            sips -z "$size" "$size" "$SOURCE_ICON" --out "$APP_ICONSET_PATH/$filename" >/dev/null
+          done <<'EOF'
+          icon-20@2x.png|40
+          icon-20@3x.png|60
+          icon-29@2x.png|58
+          icon-29@3x.png|87
+          icon-40@2x.png|80
+          icon-40@3x.png|120
+          icon-60@2x.png|120
+          icon-60@3x.png|180
+          icon-20@1x.png|20
+          icon-20@2x-ipad.png|40
+          icon-29@1x.png|29
+          icon-29@2x-ipad.png|58
+          icon-40@1x.png|40
+          icon-40@2x-ipad.png|80
+          icon-76@1x.png|76
+          icon-76@2x.png|152
+          icon-83.5@2x.png|167
+          icon-1024.png|1024
+          EOF
       - name: Set unique iOS build number
         script: |
           BUILD_NUMBER="$(date +%Y%m%d%H%M%S)"

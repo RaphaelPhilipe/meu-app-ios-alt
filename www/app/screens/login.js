@@ -25,7 +25,7 @@ export function renderLogin() {
                         <button type="submit" class="btn full">Entrar</button>
                     </div>
                 </form>
-                <p class="muted login-card__hint">Versao provisoria em WebView para uso imediato no iPhone. Depois do login, o sistema responsivo completo sera aberto no app.</p>
+                <p class="muted login-card__hint">Redirecionando para o login oficial do sistema.</p>
             </div>
         </section>
     `;
