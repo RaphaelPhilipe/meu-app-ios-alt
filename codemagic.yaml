@@ -11,7 +11,6 @@ workflows:
       cocoapods: default
       vars:
         BUNDLE_ID: "com.sigevalt.mobile"
-        XCODE_WORKSPACE: "ios/SIGEV ALT.xcworkspace"
         XCODE_SCHEME: "SIGEV ALT"
       ios_signing:
         distribution_type: app_store
@@ -29,9 +28,34 @@ workflows:
           pod install
       - name: Build IPA
         script: |
+          WORKSPACE_PATH=$(find "$CM_BUILD_DIR/ios" -maxdepth 1 -name "*.xcworkspace" | head -n 1)
+          if [ -z "$WORKSPACE_PATH" ]; then
+            echo "No .xcworkspace found under ios/"
+            exit 1
+          fi
+
+          echo "Using workspace: $WORKSPACE_PATH"
+
+          AVAILABLE_SCHEMES=$(xcodebuild -list -json -workspace "$WORKSPACE_PATH" | python3 -c "import sys, json; data=json.load(sys.stdin); print('\n'.join(data.get('workspace', {}).get('schemes', [])))")
+          echo "Available schemes:"
+          echo "$AVAILABLE_SCHEMES"
+
+          if echo "$AVAILABLE_SCHEMES" | grep -Fxq "$XCODE_SCHEME"; then
+            SELECTED_SCHEME="$XCODE_SCHEME"
+          else
+            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | head -n 1)
+          fi
+
+          if [ -z "$SELECTED_SCHEME" ]; then
+            echo "No Xcode scheme found for workspace $WORKSPACE_PATH"
+            exit 1
+          fi
+
+          echo "Using scheme: $SELECTED_SCHEME"
+
           xcode-project build-ipa \
-            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+            --workspace "$WORKSPACE_PATH" \
+            --scheme "$SELECTED_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
