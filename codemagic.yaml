@@ -26,6 +26,13 @@ workflows:
       - name: Prepare Cordova app
         script: |
           npx cordova prepare ios
+      - name: Set unique iOS build number
+        script: |
+          BUILD_NUMBER="${CM_BUILD_ID}"
+          INFO_PLIST="$CM_BUILD_DIR/platforms/ios/SIGEV Mobile/SIGEV Mobile-Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST"
       - name: Apply code signing to Xcode project
         script: |
           cd "$CM_BUILD_DIR/platforms/ios"
