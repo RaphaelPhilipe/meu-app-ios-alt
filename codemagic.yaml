@@ -40,10 +40,6 @@ workflows:
             echo "Nenhum *-Info.plist encontrado em $IOS_DIR"
             exit 1
           fi
-          if [ -z "$APP_ICONSET_PATH" ]; then
-            echo "Nenhum AppIcon.appiconset encontrado em $IOS_DIR"
-            exit 1
-          fi
 
           echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$CM_ENV"
           echo "SCHEME_NAME=$SCHEME_NAME" >> "$CM_ENV"
@@ -52,9 +48,18 @@ workflows:
           echo "Workspace detectado: $WORKSPACE_PATH"
           echo "Scheme detectado: $SCHEME_NAME"
           echo "Info.plist detectado: $INFO_PLIST_PATH"
-          echo "AppIcon detectado: $APP_ICONSET_PATH"
+          if [ -n "$APP_ICONSET_PATH" ]; then
+            echo "AppIcon detectado: $APP_ICONSET_PATH"
+          else
+            echo "AppIcon.appiconset nao encontrado neste ponto do build. Seguindo sem sobrescrever o catalogo."
+          fi
       - name: Generate iOS app icons
         script: |
+          if [ -z "$APP_ICONSET_PATH" ]; then
+            echo "Pulando geracao manual de icones porque AppIcon.appiconset nao foi encontrado."
+            exit 0
+          fi
+
           SOURCE_ICON="$CM_BUILD_DIR/resources/ios/app-icon-1024.png"
           if [ ! -f "$SOURCE_ICON" ]; then
             echo "Icone base nao encontrado em $SOURCE_ICON"
