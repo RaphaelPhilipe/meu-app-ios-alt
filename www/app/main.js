@@ -65,7 +65,7 @@ async function boot() {
     const session = await restoreSession();
     setState({ systemModules: buildSystemModules(session) });
     if (session) {
-        navigate("dashboard");
+        redirectToWebApp(APP_CONFIG.webAppEntryPath);
     } else {
         navigate("login");
     }
@@ -202,7 +202,7 @@ function bindCommonEvents() {
                 await login(formData.get("login"), formData.get("senha"));
                 setState({ systemModules: buildSystemModules(state.session) });
                 showToast("Login efetuado com sucesso.", "success");
-                navigate("dashboard");
+                redirectToWebApp(APP_CONFIG.webAppEntryPath);
             } catch (error) {
                 showToast(error.message || "Falha ao autenticar.", "error");
             } finally {
@@ -275,9 +275,11 @@ function openSystemPage(path) {
 
     const cleanPath = String(path || "").replace(/^\/+/, "");
     const bridgeUrl = `${APP_CONFIG.apiBaseUrl}/index.php?r=api/mobile/auth/web-session&token=${encodeURIComponent(accessToken)}&redirect=${encodeURIComponent(cleanPath)}`;
-    const target = window.cordova?.InAppBrowser ? "_blank" : "_system";
-    const features = "location=no,hidden=no,clearcache=no,clearsessioncache=no,toolbar=yes,closebuttoncaption=Fechar,hardwareback=yes,hideurlbar=yes,toolbarcolor=#0f7a5a,presentationstyle=fullscreen";
-    window.open(bridgeUrl, target, features);
+    window.location.replace(bridgeUrl);
+}
+
+function redirectToWebApp(path) {
+    openSystemPage(path || APP_CONFIG.webAppEntryPath);
 }
 
 function buildSystemModules(session) {
