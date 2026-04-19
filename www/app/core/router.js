@@ -1,6 +1,6 @@
 import { setState, state } from "./store.js";
 
-const protectedRoutes = new Set(["dashboard", "visits", "profile", "settings", "support", "about", "visit-detail"]);
+const protectedRoutes = new Set(["dashboard", "visits", "system", "profile", "settings", "support", "about", "visit-detail"]);
 
 export function initRouter(onRouteChange) {
     window.addEventListener("hashchange", () => handleRoute(onRouteChange));

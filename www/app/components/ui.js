@@ -1,12 +1,13 @@
 const iconMap = {
-    house: "⌂",
-    calendar: "◷",
-    person: "◉",
-    sliders: "≡"
+    house: "H",
+    calendar: "V",
+    grid: "M",
+    person: "C",
+    sliders: "A"
 };
 
 export function icon(name) {
-    return iconMap[name] || "•";
+    return iconMap[name] || ".";
 }
 
 export function renderToasts() {

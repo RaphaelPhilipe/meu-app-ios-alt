@@ -7,7 +7,8 @@ export const state = {
     currentRoute: "splash",
     visitDetailId: null,
     visits: [],
-    dashboard: null
+    dashboard: null,
+    systemModules: []
 };
 
 export function setState(patch) {

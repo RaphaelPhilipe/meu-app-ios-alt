@@ -6,6 +6,7 @@ import { renderSplash } from "./screens/splash.js";
 import { renderLogin } from "./screens/login.js";
 import { renderDashboard } from "./screens/dashboard.js";
 import { renderVisits, renderVisitsList } from "./screens/visits.js";
+import { renderSystem } from "./screens/system.js";
 import { renderVisitDetail } from "./screens/visit-detail.js";
 import { renderProfile } from "./screens/profile.js";
 import { renderSettings } from "./screens/settings.js";
@@ -16,7 +17,9 @@ import { initNetworkMonitoring } from "./services/network.js";
 import { flushQueue } from "./services/offline-queue.js";
 import { apiRequest } from "./services/api.js";
 import { login, logout, restoreSession } from "./services/auth.js";
+import { APP_CONFIG } from "./core/config.js";
 import { getCached, setCached } from "./services/cache.js";
+import { storage } from "./services/storage.js";
 
 const app = document.getElementById("app");
 
@@ -60,6 +63,7 @@ async function boot() {
     });
 
     const session = await restoreSession();
+    setState({ systemModules: buildSystemModules(session) });
     if (session) {
         navigate("dashboard");
     } else {
@@ -148,6 +152,8 @@ function renderCurrentScreen(overrideRoute = null) {
         content = renderDashboard(state.session, state.dashboard, online);
     } else if (route === "visits") {
         content = renderVisits(state.visits);
+    } else if (route === "system") {
+        content = renderSystem(state.systemModules || []);
     } else if (route === "visit-detail") {
         content = renderVisitDetail(state.visitDetail);
     } else if (route === "profile") {
@@ -194,6 +200,7 @@ function bindCommonEvents() {
             try {
                 setLoader(true);
                 await login(formData.get("login"), formData.get("senha"));
+                setState({ systemModules: buildSystemModules(state.session) });
                 showToast("Login efetuado com sucesso.", "success");
                 navigate("dashboard");
             } catch (error) {
@@ -222,10 +229,20 @@ function bindCommonEvents() {
     if (logoutButton) {
         logoutButton.addEventListener("click", async () => {
             await logout();
+            setState({ systemModules: [] });
             showToast("Sessao encerrada.", "success");
             navigate("login");
         });
     }
+
+    document.querySelectorAll("[data-system-path]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const path = button.getAttribute("data-system-path");
+            if (path) {
+                openSystemPage(path);
+            }
+        });
+    });
 
     const searchInput = document.getElementById("visit-search");
     const statusSelect = document.getElementById("visit-status");
@@ -247,4 +264,51 @@ function bindCommonEvents() {
             searchInput.addEventListener("input", filterList);
             statusSelect.addEventListener("change", filterList);
     }
+}
+
+function openSystemPage(path) {
+    const accessToken = storage.get("access_token");
+    if (!accessToken) {
+        showToast("Sessao mobile indisponivel. Entre novamente.", "error");
+        return;
+    }
+
+    const cleanPath = String(path || "").replace(/^\/+/, "");
+    const bridgeUrl = `${APP_CONFIG.apiBaseUrl}/index.php?r=api/mobile/auth/web-session&token=${encodeURIComponent(accessToken)}&redirect=${encodeURIComponent(cleanPath)}`;
+    const target = window.cordova?.InAppBrowser ? "_blank" : "_system";
+    const features = "location=no,hidden=no,clearcache=no,clearsessioncache=no,toolbar=yes,closebuttoncaption=Fechar,hardwareback=yes,hideurlbar=yes,toolbarcolor=#0f7a5a,presentationstyle=fullscreen";
+    window.open(bridgeUrl, target, features);
+}
+
+function buildSystemModules(session) {
+    const tipo = String(session?.tipo_usuario || "").toLowerCase();
+    const modules = [
+        { section: "Principal", label: "Dashboard", path: "index.php", description: "Tela inicial responsiva do sistema." },
+        { section: "Principal", label: "Minhas Visitas", path: "minhas_visitas.php", description: "Lista completa de visitas." },
+        { section: "Principal", label: "Agendar Visita", path: "gerenciar_visitas.php", description: "Cadastro e gestao de visitas." },
+        { section: "Principal", label: "Carteira de Clientes", path: "carteira_clientes.php", description: "Clientes e carteira comercial." },
+        { section: "Relatorios", label: "Relatorio de Visitas", path: "relatorio_visitas.php", description: "Relatorio detalhado." },
+        { section: "Relatorios", label: "Agenda de Visitas", path: "agenda_visitas.php", description: "Agenda comercial responsiva." },
+        { section: "Relatorios", label: "Historico Comercial", path: "historico_comercial.php", description: "Historico de relacionamento." },
+        { section: "Relatorios", label: "SLA Comercial", path: "sla_comercial.php", description: "Indicadores e acompanhamento." },
+        { section: "Operacao", label: "Ocorrencias", path: "ocorrencias.php", description: "Ocorrencias operacionais." },
+        { section: "Operacao", label: "Reajuste de Frete", path: "reajuste_frete.php", description: "Solicitacoes e ajustes." },
+        { section: "Operacao", label: "Notificacoes", path: "notificacoes.php", description: "Avisos e alertas do sistema." },
+        { section: "Operacao", label: "Chat Interno", path: "chat_interno.php", description: "Comunicacao interna." },
+        { section: "Configuracao", label: "Configuracoes", path: "configuracoes.php", description: "Preferencias do sistema." },
+        { section: "Novas Areas", label: "Prospeccao", path: "prospeccao", description: "Modulo de prospeccao." },
+        { section: "Novas Areas", label: "Oportunidades", path: "oportunidades", description: "Pipeline e oportunidades." },
+        { section: "Novas Areas", label: "Operacional", path: "operacional", description: "Modulo operacional." }
+    ];
+
+    if (tipo === "admin" || tipo === "gerente") {
+        modules.push(
+            { section: "Gestao", label: "Solicitacoes", path: "solicitacoes_supervisor.php", description: "Liberacao e acompanhamento." },
+            { section: "Gestao", label: "Mapa Supervisores", path: "mapa_visitas_supervisores.php", description: "Mapa de visitas de supervisao." },
+            { section: "Gestao", label: "Gerenciar Clientes", path: "gerenciar_clientes.php", description: "Cadastro e manutencao de clientes." },
+            { section: "Gestao", label: "Gerenciar Vendedores", path: "gerenciar_vendedores.php", description: "Administracao comercial." }
+        );
+    }
+
+    return modules;
 }

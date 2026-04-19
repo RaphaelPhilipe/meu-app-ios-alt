@@ -6,6 +6,7 @@ export function renderFrame(content) {
         <nav class="tab-bar">
             ${tabButton("dashboard", "Inicio", "house")}
             ${tabButton("visits", "Visitas", "calendar")}
+            ${tabButton("system", "Sistema", "grid")}
             ${tabButton("profile", "Conta", "person")}
             ${tabButton("settings", "Ajustes", "sliders")}
         </nav>

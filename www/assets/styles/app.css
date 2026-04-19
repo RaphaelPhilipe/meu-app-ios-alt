@@ -408,7 +408,7 @@ body {
     right: 14px;
     bottom: calc(10px + var(--safe-bottom));
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     padding: 10px;
     border-radius: 26px;
@@ -435,6 +435,35 @@ body {
 .tab-button.active {
     background: rgba(15, 122, 90, 0.12);
     color: var(--brand-strong);
+}
+
+.system-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.system-link-card {
+    border: 1px solid rgba(24, 48, 71, 0.12);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.88);
+    padding: 14px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--text);
+    font: inherit;
+}
+
+.system-link-card strong {
+    font-size: 0.95rem;
+}
+
+.system-link-card span {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.35;
 }
 
 .tab-button .icon {
@@ -535,6 +564,10 @@ body {
 
 @media (max-width: 480px) {
     .dashboard-cards-site {
+        grid-template-columns: 1fr;
+    }
+
+    .system-grid {
         grid-template-columns: 1fr;
     }
 }
