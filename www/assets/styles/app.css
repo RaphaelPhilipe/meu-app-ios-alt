@@ -115,12 +115,6 @@ body {
     font-weight: 700;
 }
 
-.grid-metrics {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
 .card,
 .empty-state,
 .offline-card {
@@ -133,16 +127,48 @@ body {
     background: rgba(255, 255, 255, 0.72);
 }
 
-.metric-label {
-    color: var(--muted);
-    font-size: 0.88rem;
+.dashboard-header-site {
+    display: flex;
+    justify-content: center;
+    text-align: center;
 }
 
-.metric-value {
-    margin-top: 8px;
-    font-size: 1.7rem;
-    font-weight: 800;
+.dashboard-header-site__title h1 {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
+
+.dashboard-header-site__title p {
+    margin: 8px 0 0;
+    color: var(--muted);
+}
+
+.dashboard-cards-site {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.metric-card__title {
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.metric-card__value {
+    margin-top: 10px;
+    font-size: 1.85rem;
+    font-weight: 900;
+}
+
+.metric-card--info .metric-card__value { color: #1877f2; }
+.metric-card--success .metric-card__value { color: #1f9d68; }
+.metric-card--warning .metric-card__value { color: #cf8b00; }
+.metric-card--danger .metric-card__value { color: #d95d39; }
 
 .section-title {
     display: flex;
@@ -237,69 +263,81 @@ body {
     flex-direction: column;
     justify-content: center;
     gap: 22px;
+    position: relative;
 }
 
 .login-card {
     padding: 28px 22px;
 }
 
-.login-card--brand {
-    background: rgba(255, 251, 244, 0.96);
+.login-backdrop {
+    position: absolute;
+    inset: -18px;
+    border-radius: 32px;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.42)),
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 20%),
+        linear-gradient(135deg, rgba(15, 122, 90, 0.9), rgba(11, 90, 67, 0.92));
+    z-index: 0;
 }
 
-.login-card__brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 12px;
+.login-card--site {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.92);
+    max-width: 360px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px 24px;
+    text-align: center;
 }
 
-.login-card__brand strong {
+.login-title-site {
+    margin: 0;
+    color: #333;
+    font-weight: 800;
+    font-size: 1.65rem;
+}
+
+.login-divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(24, 48, 71, 0.14);
+    margin: 18px 0 10px;
+}
+
+.password-field-wrap {
+    position: relative;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.86rem;
+}
+
+.login-brand-footer {
+    margin-top: 18px;
+}
+
+.login-brand-image {
     display: block;
-    font-size: 1.2rem;
-    letter-spacing: -0.02em;
+    margin: 0 auto;
+    max-width: 110px;
+    opacity: 0.86;
 }
 
 .login-card__hint {
     margin-top: 14px;
     color: var(--muted);
     opacity: 1;
-}
-
-.login-hero-card {
-    padding: 26px 22px;
-    border-radius: 28px;
-    background:
-        linear-gradient(135deg, rgba(15, 122, 90, 0.96), rgba(18, 113, 87, 0.9)),
-        radial-gradient(circle at top right, rgba(255, 195, 87, 0.18), transparent 30%);
-    color: #fff7ef;
-    box-shadow: 0 22px 50px rgba(13, 75, 59, 0.24);
-}
-
-.login-hero-card__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    padding: 7px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.16);
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    margin-bottom: 12px;
-}
-
-.login-hero-card h1 {
-    margin: 0 0 8px;
-    font-size: 2rem;
-    line-height: 1.05;
-    letter-spacing: -0.04em;
-}
-
-.login-hero-card p {
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.5;
-    opacity: 0.92;
+    text-align: left;
 }
 
 .logo-mark {
@@ -475,5 +513,11 @@ body {
 
     .detail-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-cards-site {
+        grid-template-columns: 1fr;
     }
 }

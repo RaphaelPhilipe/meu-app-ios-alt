@@ -204,6 +204,20 @@ function bindCommonEvents() {
         });
     }
 
+    const togglePassword = document.getElementById("toggle-password");
+    if (togglePassword) {
+        togglePassword.addEventListener("click", () => {
+            const passwordInput = document.getElementById("senha");
+            if (!passwordInput) {
+                return;
+            }
+
+            const show = passwordInput.type === "password";
+            passwordInput.type = show ? "text" : "password";
+            togglePassword.textContent = show ? "Ocultar" : "Ver";
+        });
+    }
+
     const logoutButton = document.getElementById("logout-button");
     if (logoutButton) {
         logoutButton.addEventListener("click", async () => {
