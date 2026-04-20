@@ -1,82 +1,135 @@
 workflows:
-  sigevalt_ios_native:
-    name: SIGEV ALT Native iOS
-    max_build_duration: 90
+  sigev_ios_cordova:
+    name: SIGEV iOS Cordova
+    max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
       app_store_connect: RPGC Systems
     environment:
-      node: 20.11.1
-      xcode: 16.2
-      cocoapods: default
       vars:
         BUNDLE_ID: "com.sigevalt.mobile"
-        XCODE_SCHEME: "SIGEV ALT"
+      node: 20.11.1
+      xcode: latest
+      cocoapods: default
       ios_signing:
         distribution_type: app_store
         bundle_identifier: $BUNDLE_ID
     scripts:
-      - name: Install dependencies
+      - name: Install Cordova dependencies
         script: |
-          npm ci
-      - name: Generate native iOS project
+          npm install
+      - name: Add iOS platform
         script: |
-          npx expo prebuild --platform ios --clean --non-interactive
-      - name: Install CocoaPods
+          npx cordova platform add ios@7.1.1 || npx cordova platform ls
+      - name: Prepare Cordova app
         script: |
-          cd ios
-          pod install
-      - name: Build IPA
+          npx cordova prepare ios
+      - name: Detect iOS project files
         script: |
-          WORKSPACE_PATH=$(find "$CM_BUILD_DIR/ios" -maxdepth 1 -name "*.xcworkspace" | head -n 1)
+          IOS_DIR="$CM_BUILD_DIR/platforms/ios"
+          WORKSPACE_PATH="$(find "$IOS_DIR" -maxdepth 1 -name '*.xcworkspace' | head -n 1)"
           if [ -z "$WORKSPACE_PATH" ]; then
-            echo "No .xcworkspace found under ios/"
+            echo "Nenhum .xcworkspace encontrado em $IOS_DIR"
             exit 1
           fi
 
-          echo "Using workspace: $WORKSPACE_PATH"
+          SCHEME_NAME="$(basename "$WORKSPACE_PATH" .xcworkspace)"
+          INFO_PLIST_PATH="$(find "$IOS_DIR" -path '*/CordovaLib/*' -prune -o -name '*-Info.plist' -print | head -n 1)"
+          APP_ICONSET_PATH="$(find "$IOS_DIR" -path '*/Images.xcassets/AppIcon.appiconset' -print | head -n 1)"
+          if [ -z "$INFO_PLIST_PATH" ]; then
+            echo "Nenhum *-Info.plist encontrado em $IOS_DIR"
+            exit 1
+          fi
 
-          AVAILABLE_SCHEMES=$(xcodebuild -list -json -workspace "$WORKSPACE_PATH" | python3 -c "import sys, json; data=json.load(sys.stdin); print('\n'.join(data.get('workspace', {}).get('schemes', [])))")
-          echo "Available schemes:"
-          echo "$AVAILABLE_SCHEMES"
-
-          if echo "$AVAILABLE_SCHEMES" | grep -Fxq "$XCODE_SCHEME"; then
-            SELECTED_SCHEME="$XCODE_SCHEME"
-          elif echo "$AVAILABLE_SCHEMES" | grep -Fxiq "SIGEVALT"; then
-            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | grep -Fix "SIGEVALT" | head -n 1)
-          elif echo "$AVAILABLE_SCHEMES" | grep -Fxiq "SIGEV ALT"; then
-            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | grep -Fix "SIGEV ALT" | head -n 1)
+          echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$CM_ENV"
+          echo "SCHEME_NAME=$SCHEME_NAME" >> "$CM_ENV"
+          echo "INFO_PLIST_PATH=$INFO_PLIST_PATH" >> "$CM_ENV"
+          echo "APP_ICONSET_PATH=$APP_ICONSET_PATH" >> "$CM_ENV"
+          echo "Workspace detectado: $WORKSPACE_PATH"
+          echo "Scheme detectado: $SCHEME_NAME"
+          echo "Info.plist detectado: $INFO_PLIST_PATH"
+          if [ -n "$APP_ICONSET_PATH" ]; then
+            echo "AppIcon detectado: $APP_ICONSET_PATH"
           else
-            SELECTED_SCHEME=$(echo "$AVAILABLE_SCHEMES" | grep -Ev '^(Pods-|boost$|React-|Expo|SocketRocket|Yoga|glog|fmt|hermes-engine|RCT-|ReactCodegen|ReactCommon|RNCAsyncStorage|RNGestureHandler|RNReanimated|RNScreens)' | head -n 1)
+            echo "AppIcon.appiconset nao encontrado neste ponto do build. Seguindo sem sobrescrever o catalogo."
+          fi
+      - name: Generate iOS app icons
+        script: |
+          if [ -z "$APP_ICONSET_PATH" ]; then
+            echo "Pulando geracao manual de icones porque AppIcon.appiconset nao foi encontrado."
+            exit 0
           fi
 
-          if [ -z "$SELECTED_SCHEME" ]; then
-            echo "No Xcode scheme found for workspace $WORKSPACE_PATH"
+          SOURCE_ICON="$CM_BUILD_DIR/resources/ios/app-icon-1024.png"
+          if [ ! -f "$SOURCE_ICON" ]; then
+            echo "Icone base nao encontrado em $SOURCE_ICON"
             exit 1
           fi
 
-          echo "Using scheme: $SELECTED_SCHEME"
-
-          xcode-project use-profiles
-
-          EXPORT_OPTIONS_PLIST="/Users/builder/export_options.plist"
-          if [ ! -f "$EXPORT_OPTIONS_PLIST" ]; then
-            cat > "$EXPORT_OPTIONS_PLIST" <<EOF
+          cat > "$APP_ICONSET_PATH/Contents.json" <<'EOF'
           {
-            "method": "app-store",
-            "signingStyle": "automatic",
-            "teamID": "${APP_STORE_CONNECT_TEAM_ID:-}",
-            "uploadBitcode": false,
-            "compileBitcode": false
+            "images": [
+              { "idiom": "iphone", "size": "20x20", "scale": "2x", "filename": "icon-20@2x.png" },
+              { "idiom": "iphone", "size": "20x20", "scale": "3x", "filename": "icon-20@3x.png" },
+              { "idiom": "iphone", "size": "29x29", "scale": "2x", "filename": "icon-29@2x.png" },
+              { "idiom": "iphone", "size": "29x29", "scale": "3x", "filename": "icon-29@3x.png" },
+              { "idiom": "iphone", "size": "40x40", "scale": "2x", "filename": "icon-40@2x.png" },
+              { "idiom": "iphone", "size": "40x40", "scale": "3x", "filename": "icon-40@3x.png" },
+              { "idiom": "iphone", "size": "60x60", "scale": "2x", "filename": "icon-60@2x.png" },
+              { "idiom": "iphone", "size": "60x60", "scale": "3x", "filename": "icon-60@3x.png" },
+              { "idiom": "ipad", "size": "20x20", "scale": "1x", "filename": "icon-20@1x.png" },
+              { "idiom": "ipad", "size": "20x20", "scale": "2x", "filename": "icon-20@2x-ipad.png" },
+              { "idiom": "ipad", "size": "29x29", "scale": "1x", "filename": "icon-29@1x.png" },
+              { "idiom": "ipad", "size": "29x29", "scale": "2x", "filename": "icon-29@2x-ipad.png" },
+              { "idiom": "ipad", "size": "40x40", "scale": "1x", "filename": "icon-40@1x.png" },
+              { "idiom": "ipad", "size": "40x40", "scale": "2x", "filename": "icon-40@2x-ipad.png" },
+              { "idiom": "ipad", "size": "76x76", "scale": "1x", "filename": "icon-76@1x.png" },
+              { "idiom": "ipad", "size": "76x76", "scale": "2x", "filename": "icon-76@2x.png" },
+              { "idiom": "ipad", "size": "83.5x83.5", "scale": "2x", "filename": "icon-83.5@2x.png" },
+              { "idiom": "ios-marketing", "size": "1024x1024", "scale": "1x", "filename": "icon-1024.png" }
+            ],
+            "info": { "version": 1, "author": "xcode" }
           }
           EOF
-            plutil -convert xml1 "$EXPORT_OPTIONS_PLIST"
-          fi
 
+          while IFS='|' read -r filename size; do
+            sips -z "$size" "$size" "$SOURCE_ICON" --out "$APP_ICONSET_PATH/$filename" >/dev/null
+          done <<'EOF'
+          icon-20@2x.png|40
+          icon-20@3x.png|60
+          icon-29@2x.png|58
+          icon-29@3x.png|87
+          icon-40@2x.png|80
+          icon-40@3x.png|120
+          icon-60@2x.png|120
+          icon-60@3x.png|180
+          icon-20@1x.png|20
+          icon-20@2x-ipad.png|40
+          icon-29@1x.png|29
+          icon-29@2x-ipad.png|58
+          icon-40@1x.png|40
+          icon-40@2x-ipad.png|80
+          icon-76@1x.png|76
+          icon-76@2x.png|152
+          icon-83.5@2x.png|167
+          icon-1024.png|1024
+          EOF
+      - name: Set unique iOS build number
+        script: |
+          BUILD_NUMBER="$(date +%Y%m%d%H%M%S)"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$INFO_PLIST_PATH" || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $BUILD_NUMBER" "$INFO_PLIST_PATH"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH"
+      - name: Apply code signing to Xcode project
+        script: |
+          cd "$CM_BUILD_DIR/platforms/ios"
+          xcode-project use-profiles
+      - name: Build IPA with xcode-project
+        script: |
           xcode-project build-ipa \
             --workspace "$WORKSPACE_PATH" \
-            --scheme "$SELECTED_SCHEME" \
-            --export-options-plist "$EXPORT_OPTIONS_PLIST"
+            --scheme "$SCHEME_NAME"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
@@ -86,3 +139,8 @@ workflows:
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
+        # Configure a integracao App Store Connect no workflow pelo painel do Codemagic.
+        # Se preferir API Key manual, use as variaveis seguras:
+        # APP_STORE_CONNECT_ISSUER_ID
+        # APP_STORE_CONNECT_KEY_IDENTIFIER
+        # APP_STORE_CONNECT_PRIVATE_KEY
