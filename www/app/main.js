@@ -7,8 +7,8 @@ import { renderAbout } from "./screens/about.js";
 import { renderAgenda } from "./screens/agenda.js";
 import { renderCustomers } from "./screens/customers.js";
 import { renderDashboard } from "./screens/dashboard.js";
-import { renderFreightAdjustments } from "./screens/freight-adjustments.js";
-import { renderIssues } from "./screens/issues.js";
+import { renderFreightAdjustmentDetail, renderFreightAdjustments } from "./screens/freight-adjustments.js";
+import { renderIssueDetail, renderIssues } from "./screens/issues.js";
 import { renderLogin } from "./screens/login.js";
 import { renderNotifications } from "./screens/notifications.js";
 import { renderProfile } from "./screens/profile.js";
@@ -105,8 +105,14 @@ function renderCurrentRoute() {
         case "issues":
             markup = renderIssues(state.issues);
             break;
+        case "issue-detail":
+            markup = renderIssueDetail(state.issueDetail);
+            break;
         case "freight-adjustments":
             markup = renderFreightAdjustments(state.freightAdjustments);
+            break;
+        case "freight-adjustment-detail":
+            markup = renderFreightAdjustmentDetail(state.freightAdjustmentDetail);
             break;
         case "profile":
             markup = renderProfile(state.profile);
@@ -185,6 +191,24 @@ function bindEvents() {
             const path = node.getAttribute("data-system-path");
             if (path) {
                 openSystemRoute(path);
+            }
+        });
+    });
+
+    document.querySelectorAll("[data-issue-id]").forEach((node) => {
+        node.addEventListener("click", () => {
+            const issueId = node.getAttribute("data-issue-id");
+            if (issueId) {
+                navigate("issue-detail", { id: issueId });
+            }
+        });
+    });
+
+    document.querySelectorAll("[data-freight-id]").forEach((node) => {
+        node.addEventListener("click", () => {
+            const freightId = node.getAttribute("data-freight-id");
+            if (freightId) {
+                navigate("freight-adjustment-detail", { id: freightId });
             }
         });
     });
@@ -345,10 +369,16 @@ async function ensureRouteData(route) {
                 await fetchIssues();
             }
             break;
+        case "issue-detail":
+            await fetchIssueDetail(state.issueDetailId);
+            break;
         case "freight-adjustments":
             if (!state.freightAdjustments) {
                 await fetchFreightAdjustments();
             }
+            break;
+        case "freight-adjustment-detail":
+            await fetchFreightAdjustmentDetail(state.freightAdjustmentDetailId);
             break;
         case "profile":
             if (!state.profile) {
@@ -464,11 +494,31 @@ async function fetchIssues(filters = {}, force = false) {
     return payload;
 }
 
+async function fetchIssueDetail(id) {
+    if (!id) {
+        setState({ issueDetail: null });
+        return null;
+    }
+    const payload = await fetchWithCache(`issue:${id}`, `api/mobile/issues/show&id=${encodeURIComponent(id)}`, true);
+    setState({ issueDetail: payload.item || null });
+    return payload;
+}
+
 async function fetchFreightAdjustments(filters = {}, force = false) {
     const query = new URLSearchParams(filters).toString();
     const endpoint = query ? `api/mobile/freight-adjustments&${query}` : "api/mobile/freight-adjustments";
     const payload = await fetchWithCache(`freight:${query || "all"}`, endpoint, force);
     setState({ freightAdjustments: payload });
+    return payload;
+}
+
+async function fetchFreightAdjustmentDetail(id) {
+    if (!id) {
+        setState({ freightAdjustmentDetail: null });
+        return null;
+    }
+    const payload = await fetchWithCache(`freight-detail:${id}`, `api/mobile/freight-adjustments/show&id=${encodeURIComponent(id)}`, true);
+    setState({ freightAdjustmentDetail: payload.item || null });
     return payload;
 }
 
@@ -566,7 +616,11 @@ function clearCachedAppData() {
         "profile",
         "settings",
         "help",
-        "about"
+        "about",
+        "agenda:all",
+        "customers:all",
+        "issues:all",
+        "freight:all"
     ].forEach((key) => storage.remove(`cache:${key}`));
 }
 

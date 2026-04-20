@@ -6,14 +6,14 @@ export function renderVisits(items = []) {
 
     return `
         <section class="screen">
-            <div class="screen-header">
+            <div class="site-page-header">
                 <div>
-                    <h1>Visitas</h1>
-                    <p>Lista mobile com busca local, estado vazio e abertura de detalhe.</p>
+                    <h1>Minhas visitas</h1>
+                    <p>Consulta operacional no visual do responsivo.</p>
                 </div>
             </div>
-            <div class="card">
-                <div class="search-row">
+            <div class="site-filter-card">
+                <div class="site-filter-grid">
                     <input class="search-input" id="visit-search" type="search" placeholder="Buscar cliente ou objetivo">
                     <select id="visit-status">
                         <option value="">Todos</option>
@@ -23,7 +23,12 @@ export function renderVisits(items = []) {
                     </select>
                 </div>
             </div>
-            <div class="list" id="visits-list">${list}</div>
+            <div class="site-table-card">
+                <div class="site-table-card__header">
+                    <h2>Agenda de visitas</h2>
+                </div>
+                <div class="site-list" id="visits-list">${list}</div>
+            </div>
         </section>
     `;
 }
@@ -32,21 +37,36 @@ export function renderVisitsList(items = []) {
     if (!items.length) {
         return `
             <div class="empty-state">
-                <h2>Nenhum dado encontrado</h2>
+                <h2>Nenhuma visita encontrada</h2>
                 <p>Experimente buscar por cliente ou trocar o status das visitas.</p>
             </div>
         `;
     }
 
     return items.map((item) => `
-        <article class="list-item" data-visit-id="${item.id}">
-            <h3>${escapeHtml(item.cliente_nome || "Cliente sem nome")}</h3>
-            <p>${escapeHtml(item.objetivo || "Sem objetivo informado.")}</p>
-            <div class="list-meta">
-                <span class="pill">${escapeHtml(formatDateTime(item.data_visita, item.hora_visita || ""))}</span>
-                <span class="pill">${escapeHtml(item.vendedor_nome || "-")}</span>
-                <span class="pill">${escapeHtml(item.status || "-")}</span>
+        <article class="site-list-row" data-visit-id="${item.id}">
+            <div class="site-list-row__main">
+                <strong>${escapeHtml(item.cliente_nome || "Cliente sem nome")}</strong>
+                <p>${escapeHtml(item.objetivo || "Sem objetivo informado.")}</p>
+            </div>
+            <div class="site-list-row__meta">
+                <span class="site-badge">${escapeHtml(formatDateTime(item.data_visita, item.hora_visita || ""))}</span>
+                <span class="site-badge">${escapeHtml(item.vendedor_nome || "-")}</span>
+                <span class="site-badge ${statusTone(item.status || "")}">${escapeHtml(item.status || "-")}</span>
             </div>
         </article>
     `).join("");
+}
+
+function statusTone(status) {
+    if (status === "Atrasada") {
+        return "danger";
+    }
+    if (status === "Pendente") {
+        return "warning";
+    }
+    if (status === "Realizada") {
+        return "success";
+    }
+    return "";
 }

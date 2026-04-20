@@ -13,7 +13,9 @@ const protectedRoutes = new Set([
     "agenda",
     "customers",
     "issues",
-    "freight-adjustments"
+    "freight-adjustments",
+    "issue-detail",
+    "freight-adjustment-detail"
 ]);
 
 const aliases = {
@@ -45,7 +47,9 @@ function handleRoute(onRouteChange) {
     const target = protectedRoutes.has(route) && !state.session ? "login" : route;
     setState({
         currentRoute: target,
-        visitDetailId: params.get("id")
+        visitDetailId: target === "visit-detail" ? params.get("id") : null,
+        issueDetailId: target === "issue-detail" ? params.get("id") : null,
+        freightAdjustmentDetailId: target === "freight-adjustment-detail" ? params.get("id") : null
     });
     onRouteChange(target, params);
 }

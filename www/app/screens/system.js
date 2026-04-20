@@ -9,8 +9,8 @@ export function renderSystem(modules = []) {
     }, {});
 
     const content = Object.entries(grouped).map(([section, items]) => `
-        <div class="card">
-            <div class="section-title">
+        <div class="site-table-card">
+            <div class="site-table-card__header">
                 <h2>${escapeHtml(section)}</h2>
             </div>
             <div class="system-grid">
@@ -26,7 +26,7 @@ export function renderSystem(modules = []) {
 
     return `
         <section class="screen">
-            <div class="screen-header">
+            <div class="site-page-header">
                 <div>
                     <h1>Sistema</h1>
                     <p>Atalhos para as telas responsivas reais do SIGEV dentro do app.</p>
