@@ -4,6 +4,7 @@
     "slug": "sigev-alt-native-ios",
     "scheme": "sigevalt",
     "version": "1.0.0",
+    "newArchEnabled": false,
     "icon": "./assets/icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -20,6 +21,16 @@
     },
     "assetBundlePatterns": [
       "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ]
     ]
   }
 }
